@@ -1573,7 +1573,9 @@ class FlxInputText extends FlxText implements IFlxInputText
 	{
 		var overlap = false;
 		var pointerPos = FlxPoint.get();
-		for (camera in getCameras())
+		var cams = cameras;
+        if (cams == null) cams = FlxG.cameras.list;
+        for (camera in cams)
 		{
 			pointer.getWorldPosition(camera, pointerPos);
 			if (overlapsPoint(pointerPos, true, camera))
