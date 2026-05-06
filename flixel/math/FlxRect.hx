@@ -436,6 +436,19 @@ class FlxRect implements IFlxPooled
 		return result;
 	}
 
+	 /**
+	 * Resizes `this` instance so that it fits within the intersection of the this and
+	 * the target rect. If there is no overlap between them, The result is an empty rect.
+	 *
+	 * @param   rect    Rectangle to check intersection against
+	 * @return  This rect, useful for chaining
+	 * @since 5.9.0
+	 */
+	public function clipTo(rect:FlxRect):FlxRect
+	{
+		return rect.intersection(this, this);
+	}
+
 	/**
 	 * Returns the area of intersection with specified rectangle.
 	 * If the rectangles do not intersect, this method returns an empty rectangle.
