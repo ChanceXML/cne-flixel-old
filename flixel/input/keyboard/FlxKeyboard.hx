@@ -95,6 +95,26 @@ class FlxKeyboard extends FlxKeyManager<FlxKey, FlxKeyList>
 		#end
 	}
 
+	/**
+	 * Manually trigger a key press or release state via code.
+	 * Example: `FlxG.keys.handleAction(FlxKey.Q, true)`
+	 */
+	public function handleAction(key:FlxKey, pressed:Bool):Void
+	{
+		var keyInput = getKey(key);
+		if (keyInput != null)
+		{
+			if (pressed)
+			{
+				keyInput.press();
+			}
+			else
+			{
+				keyInput.release();
+			}
+		}
+	}
+
 	override function onKeyUp(event:KeyboardEvent):Void
 	{
 		super.onKeyUp(event);
