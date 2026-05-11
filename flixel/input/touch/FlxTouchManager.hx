@@ -12,6 +12,11 @@ import openfl.ui.MultitouchInputMode;
 class FlxTouchManager implements IFlxInputManager
 {
 	/**
+	 * Whether touch input is currently enabled.
+	 */
+	public var enabled:Bool = true;
+
+	/**
 	 * The maximum number of concurrent touch points supported by the current device.
 	 */
 	public static var maxTouchPoints:Int = 0;
@@ -77,9 +82,6 @@ class FlxTouchManager implements IFlxInputManager
 
 	/**
 	 * Gets all touches which were just started
-	 *
-	 * @param	TouchArray	Optional array to fill with touch objects
-	 * @return	Array with touches
 	 */
 	public function justStarted(?TouchArray:Array<FlxTouch>):Array<FlxTouch>
 	{
@@ -108,9 +110,6 @@ class FlxTouchManager implements IFlxInputManager
 
 	/**
 	 * Gets all touches which were just ended
-	 *
-	 * @param	TouchArray	Optional array to fill with touch objects
-	 * @return	Array with touches
 	 */
 	public function justReleased(?TouchArray:Array<FlxTouch>):Array<FlxTouch>
 	{
@@ -174,6 +173,8 @@ class FlxTouchManager implements IFlxInputManager
 	 */
 	function handleTouchBegin(FlashEvent:TouchEvent):Void
 	{
+		if (!enabled) return;
+
 		var touch:FlxTouch = _touchesCache.get(FlashEvent.touchPointID);
 		if (touch != null)
 		{
@@ -192,6 +193,8 @@ class FlxTouchManager implements IFlxInputManager
 	 */
 	function handleTouchEnd(FlashEvent:TouchEvent):Void
 	{
+		if (!enabled) return;
+
 		var touch:FlxTouch = _touchesCache.get(FlashEvent.touchPointID);
 
 		if (touch != null)
@@ -205,6 +208,8 @@ class FlxTouchManager implements IFlxInputManager
 	 */
 	function handleTouchMove(FlashEvent:TouchEvent):Void
 	{
+		if (!enabled) return;
+
 		var touch:FlxTouch = _touchesCache.get(FlashEvent.touchPointID);
 
 		if (touch != null)
@@ -214,12 +219,6 @@ class FlxTouchManager implements IFlxInputManager
 		}
 	}
 
-	/**
-	 * Internal function for adding new touches to the manager
-	 *
-	 * @param	Touch	A new FlxTouch object
-	 * @return	The added FlxTouch object
-	 */
 	function add(Touch:FlxTouch):FlxTouch
 	{
 		list.push(Touch);
@@ -227,14 +226,6 @@ class FlxTouchManager implements IFlxInputManager
 		return Touch;
 	}
 
-	/**
-	 * Internal function for touch reuse
-	 *
-	 * @param	X			stageX touch coordinate
-	 * @param	Y			stageY touch coordinate
-	 * @param	PointID		id of the touch
-	 * @return	A recycled touch object
-	 */
 	function recycle(X:Int, Y:Int, PointID:Int, pressure:Float):FlxTouch
 	{
 		if (_inactiveTouches.length > 0)
@@ -246,12 +237,10 @@ class FlxTouchManager implements IFlxInputManager
 		return add(new FlxTouch(X, Y, PointID, pressure));
 	}
 
-	/**
-	 * Called by the internal game loop to update the touch position in the game world.
-	 * Also updates the just pressed/just released flags.
-	 */
 	function update():Void
 	{
+		if (!enabled) return;
+
 		var i:Int = list.length - 1;
 		var touch:FlxTouch;
 
@@ -259,7 +248,6 @@ class FlxTouchManager implements IFlxInputManager
 		{
 			touch = list[i];
 
-			// Touch ended at previous frame
 			if (touch.released && !touch.justReleased)
 			{
 				touch.input.reset();
@@ -267,7 +255,7 @@ class FlxTouchManager implements IFlxInputManager
 				list.splice(i, 1);
 				_inactiveTouches.push(touch);
 			}
-			else // Touch is active currently
+			else 
 			{
 				touch.update();
 			}
