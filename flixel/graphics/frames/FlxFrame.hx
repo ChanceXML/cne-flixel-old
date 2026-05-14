@@ -92,10 +92,11 @@ class FlxFrame implements IFlxDestroyable
 	 * The type of this frame.
 	 */
 	public var type:FlxFrameType;
+	
+	var tileMatrix:Array<Float>;
 
-	var tileMatrix:Vector<Float>;
-
-	var blitMatrix:Vector<Float>;
+	var blitMatrix:Array<Float>;
+	
 
 	@:allow(flixel.graphics.FlxGraphic)
 	@:allow(flixel.graphics.frames.FlxFramesCollection)
@@ -112,9 +113,9 @@ class FlxFrame implements IFlxDestroyable
 		sourceSize = FlxPoint.get();
 		offset = FlxPoint.get();
 
-		blitMatrix = new Vector<Float>(6);
-		if (FlxG.renderTile)
-			tileMatrix = new Vector<Float>(6);
+		blitMatrix = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0];
+	    if (FlxG.renderTile)
+		    tileMatrix = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0];
 	}
 
 	@:allow(flixel.graphics.frames.FlxFramesCollection)
