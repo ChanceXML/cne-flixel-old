@@ -500,6 +500,12 @@ class FlxMouse extends FlxPointer implements IFlxInputManager
 		_prevScreenX = screenX;
 		_prevScreenY = screenY;
 
+		if (globallyBlocked)
+        { 
+	        _leftButton.reset();
+	        return;
+        }
+
 		#if !FLX_UNIT_TEST // Travis segfaults when game.mouseX / Y is accessed
 		setGlobalScreenPositionUnsafe(FlxG.game.mouseX, FlxG.game.mouseY);
 
