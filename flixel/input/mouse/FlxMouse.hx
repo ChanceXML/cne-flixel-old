@@ -41,9 +41,9 @@ class FlxMouse extends FlxPointer implements IFlxInputManager
 	public var enabled:Bool = true;
 
 	/**
-     * Whether mouse input should be blocked globally.
-     **/
-    public static var globallyBlocked:Bool = false;
+	 * Whether mouse input should be blocked globally.
+	 **/
+	public static var globallyBlocked:Bool = false;
 
 	/**
 	 * Current "delta" value of mouse wheel. If the wheel was just scrolled up,
@@ -239,13 +239,6 @@ class FlxMouse extends FlxPointer implements IFlxInputManager
 	/**
 	 * Load a new mouse cursor graphic - if you're using native cursors on flash,
 	 * check registerNativeCursor() for more control.
-	 *
-	 * @param   Graphic   The image you want to use for the cursor.
-	 * @param   Scale     Change the size of the cursor.
-	 * @param   XOffset   The number of pixels between the mouse's screen position and the graphic's top left corner.
-	 *                    Has to be positive when using native cursors.
-	 * @param   YOffset   The number of pixels between the mouse's screen position and the graphic's top left corner.
-	 *                    Has to be positive when using native cursors.
 	 */
 	public function load(?Graphic:Dynamic, Scale:Float = 1, XOffset:Int = 0, YOffset:Int = 0):Void
 	{
@@ -334,41 +327,19 @@ class FlxMouse extends FlxPointer implements IFlxInputManager
 	}
 
 	#if FLX_NATIVE_CURSOR
-	/**
-	 * Set a Native cursor that has been registered by name
-	 * Warning, you need to use registerNativeCursor() before you use it here
-	 *
-	 * @param   name   The name ID used when registered
-	 */
 	public function setNativeCursor(name:String):Void
 	{
 		_currentNativeCursor = name;
-
 		Mouse.show();
-
-		// Flash requires the use of AUTO before a custom cursor to work
 		Mouse.cursor = MouseCursor.AUTO;
 		Mouse.cursor = _currentNativeCursor;
 	}
 
-	/**
-	 * Shortcut to register a native cursor in flash
-	 *
-	 * @param   name         The ID name used for the cursor
-	 * @param   cursorData   MouseCursorData contains the bitmap, hotspot etc
-	 */
 	public inline function registerNativeCursor(name:String, cursorData:MouseCursorData):Void
 	{
 		untyped Mouse.registerCursor(name, cursorData);
 	}
 
-	/**
-	 * Shortcut to register a simple MouseCursorData
-	 *
-	 * @param   name         The ID name used for the cursor
-	 * @param   cursorData   MouseCursorData contains the bitmap, hotspot etc
-	 * @since   4.2.0
-	 */
 	public function registerSimpleNativeCursorData(name:String, cursorBitmap:BitmapData):MouseCursorData
 	{
 		var cursorVector = new Vector<BitmapData>();
@@ -386,12 +357,6 @@ class FlxMouse extends FlxPointer implements IFlxInputManager
 		return cursorData;
 	}
 
-	/**
-	 * Shortcut to create and set a simple MouseCursorData
-	 *
-	 * @param   name         The ID name used for the cursor
-	 * @param   cursorData   MouseCursorData contains the bitmap, hotspot etc
-	 */
 	public function setSimpleNativeCursorData(name:String, cursorBitmap:BitmapData):MouseCursorData
 	{
 		var data = registerSimpleNativeCursorData(name, cursorBitmap);
@@ -454,9 +419,6 @@ class FlxMouse extends FlxPointer implements IFlxInputManager
 		#end
 	}
 
-	/**
-	 * @param   cursorContainer   The cursor container sprite passed by FlxGame
-	 */
 	@:allow(flixel.FlxG)
 	function new(cursorContainer:Sprite)
 	{
@@ -489,10 +451,6 @@ class FlxMouse extends FlxPointer implements IFlxInputManager
 		Mouse.hide();
 	}
 
-	/**
-	 * Called by the internal game loop to update the mouse pointer's position in the game world.
-	 * Also updates the just pressed/just released flags.
-	 */
 	function update():Void
 	{
 		_prevX = x;
@@ -501,10 +459,16 @@ class FlxMouse extends FlxPointer implements IFlxInputManager
 		_prevScreenY = screenY;
 
 		if (globallyBlocked)
-        { 
-	        _leftButton.reset();
-	        return;
-        }
+		{ 
+			_leftButton.reset();
+			#if FLX_MOUSE_ADVANCED
+			_middleButton.reset();
+			_rightButton.reset();
+			#end
+			wheel = 0;
+			_wheelUsed = false;
+			return;
+		}
 
 		#if !FLX_UNIT_TEST // Travis segfaults when game.mouseX / Y is accessed
 		setGlobalScreenPositionUnsafe(FlxG.game.mouseX, FlxG.game.mouseY);
@@ -532,9 +496,6 @@ class FlxMouse extends FlxPointer implements IFlxInputManager
 		_wheelUsed = false;
 	}
 
-	/**
-	 * Called from the main Event.ACTIVATE that is dispatched in FlxGame
-	 */
 	function onFocus():Void
 	{
 		reset();
@@ -546,9 +507,6 @@ class FlxMouse extends FlxPointer implements IFlxInputManager
 		#end
 	}
 
-	/**
-	 * Called from the main Event.DEACTIVATE that is dispatched in FlxGame
-	 */
 	function onFocusLost():Void
 	{
 		#if !FLX_NATIVE_CURSOR
@@ -565,17 +523,12 @@ class FlxMouse extends FlxPointer implements IFlxInputManager
 
 	function onGameStart():Void
 	{
-		// Call set_visible with the value visible has been initialized with
-		// (unless set in create() of the initial state)
 		set_visible(visible);
 	}
 
-	/**
-	 * Internal event handler for input and focus.
-	 */
 	function onMouseWheel(flashEvent:MouseEvent):Void
 	{
-		if (enabled)
+		if (enabled && !globallyBlocked)
 		{
 			_wheelUsed = true;
 			wheel = flashEvent.delta;
@@ -583,10 +536,6 @@ class FlxMouse extends FlxPointer implements IFlxInputManager
 	}
 
 	#if FLX_MOUSE_ADVANCED
-	/**
-	 * We're detecting the mouse leave event to prevent a bug where `pressed` remains true
-	 * for the middle and right mouse button when pressed and dragged outside the window.
-	 */
 	inline function onMouseLeave(_):Void
 	{
 		_rightButton.onUp();
@@ -610,67 +559,84 @@ class FlxMouse extends FlxPointer implements IFlxInputManager
 		return screenY - _prevScreenY;
 
 	inline function get_pressed():Bool
-    {
-	    if (globallyBlocked)
-		    return false;
- 
-	    return _leftButton.pressed;
-    }
+	{
+		if (globallyBlocked) return false;
+		return _leftButton.pressed;
+	}
 	
 	inline function get_justPressed():Bool
-    {
-	    if (globallyBlocked)
-		    return false;
-
-    	return _leftButton.justPressed;
-    }
+	{
+		if (globallyBlocked) return false;
+		return _leftButton.justPressed;
+	}
 	
 	inline function get_released():Bool
-    {
-	    if (globallyBlocked)
-		    return true;
-
-	    return _leftButton.released;
-    }
+	{
+		if (globallyBlocked) return true;
+		return _leftButton.released;
+	}
 
 	inline function get_justReleased():Bool
-    {
-	    if (globallyBlocked)
-		    return false;
-
-	    return _leftButton.justReleased;
-    }
+	{
+		if (globallyBlocked) return false;
+		return _leftButton.justReleased;
+	}
 
 	inline function get_justPressedTimeInTicks():Int
 		return _leftButton.justPressedTimeInTicks;
 
 	#if FLX_MOUSE_ADVANCED
+
 	inline function get_pressedRight():Bool
+	{
+		if (globallyBlocked) return false;
 		return _rightButton.pressed;
+	}
 
 	inline function get_justPressedRight():Bool
+	{
+		if (globallyBlocked) return false;
 		return _rightButton.justPressed;
+	}
 
 	inline function get_releasedRight():Bool
+	{
+		if (globallyBlocked) return true;
 		return _rightButton.released;
+	}
 
 	inline function get_justReleasedRight():Bool
+	{
+		if (globallyBlocked) return false;
 		return _rightButton.justReleased;
+	}
 
 	inline function get_justPressedTimeInTicksRight():Int
 		return _rightButton.justPressedTimeInTicks;
 
 	inline function get_pressedMiddle():Bool
+	{
+		if (globallyBlocked) return false;
 		return _middleButton.pressed;
+	}
 
 	inline function get_justPressedMiddle():Bool
+	{
+		if (globallyBlocked) return false;
 		return _middleButton.justPressed;
+	}
 
 	inline function get_releasedMiddle():Bool
+	{
+		if (globallyBlocked) return true;
 		return _middleButton.released;
+	}
 
 	inline function get_justReleasedMiddle():Bool
+	{
+		if (globallyBlocked) return false;
 		return _middleButton.justReleased;
+	}
 
 	inline function get_justPressedTimeInTicksMiddle():Int
 		return _middleButton.justPressedTimeInTicks;
@@ -774,9 +740,6 @@ class FlxMouse extends FlxPointer implements IFlxInputManager
 	@:allow(flixel.system.replay.FlxReplay)
 	function playback(record:MouseRecord):Void
 	{
-		// Manually dispatch a MOUSE_UP event so that, e.g., FlxButtons click correctly on playback.
-		// Note: some clicks are fast enough to not pass through a frame where they are PRESSED
-		// and JUST_RELEASED is swallowed by FlxButton and others, but not third-party code
 		if ((_lastLeftButtonState == PRESSED || _lastLeftButtonState == JUST_PRESSED)
 			&& (record.button == RELEASED || record.button == JUST_RELEASED))
 		{
