@@ -41,6 +41,11 @@ class FlxMouse extends FlxPointer implements IFlxInputManager
 	public var enabled:Bool = true;
 
 	/**
+     * Whether mouse input should be blocked globally.
+     **/
+    public static var globallyBlocked:Bool = false;
+
+	/**
 	 * Current "delta" value of mouse wheel. If the wheel was just scrolled up,
 	 * it will have a positive value and vice versa. Otherwise the value will be 0.
 	 */
@@ -599,16 +604,36 @@ class FlxMouse extends FlxPointer implements IFlxInputManager
 		return screenY - _prevScreenY;
 
 	inline function get_pressed():Bool
-		return _leftButton.pressed;
-
+    {
+	    if (globallyBlocked)
+		    return false;
+ 
+	    return _leftButton.pressed;
+    }
+	
 	inline function get_justPressed():Bool
-		return _leftButton.justPressed;
+    {
+	    if (globallyBlocked)
+		    return false;
 
+    	return _leftButton.justPressed;
+    }
+	
 	inline function get_released():Bool
-		return _leftButton.released;
+    {
+	    if (globallyBlocked)
+		    return true;
+
+	    return _leftButton.released;
+    }
 
 	inline function get_justReleased():Bool
-		return _leftButton.justReleased;
+    {
+	    if (globallyBlocked)
+		    return false;
+
+	    return _leftButton.justReleased;
+    }
 
 	inline function get_justPressedTimeInTicks():Int
 		return _leftButton.justPressedTimeInTicks;
