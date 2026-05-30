@@ -21,6 +21,8 @@ class FlxKeyboard extends FlxKeyManager<FlxKey, FlxKeyList>
 	var _nativeCorrection:Map<String, Int>;
 	#end
 
+	private var _lastInputTime:Float = 0.0;
+
 	public function new()
 	{
 		super(FlxKeyList.new);
@@ -99,21 +101,30 @@ class FlxKeyboard extends FlxKeyManager<FlxKey, FlxKeyList>
 	 * Manually trigger a key press or release state via code.
 	 * Example: `FlxG.keys.handleAction(FlxKey.Q, true)`
 	 */
-	public function handleAction(key:FlxKey, pressed:Bool):Void
-	{
-		var keyInput = getKey(key);
-		if (keyInput != null)
-		{
-			if (pressed)
-			{
-				keyInput.press();
-			}
-			else
-			{
-				keyInput.release();
-			}
-		}
-	}
+    public function handleAction(key:FlxKey, pressed:Bool):Void
+    {
+        var currentTime:Float = Sys.time();
+    
+        if (currentTime == _lastInputTime)
+        {
+            return;
+        }
+    
+        _lastInputTime = currentTime;
+  
+        var keyInput = getKey(key);
+        if (keyInput != null)
+        {
+            if (pressed)
+            {
+                keyInput.press();
+            }
+            else
+            {
+                keyInput.release();
+            }
+        }
+    }
 
 	override function onKeyUp(event:KeyboardEvent):Void
 	{
