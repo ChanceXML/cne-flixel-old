@@ -22,6 +22,7 @@ class FlxKeyboard extends FlxKeyManager<FlxKey, FlxKeyList>
 	#end
 
 	private var _lastInputTime:Float = 0.0;
+	public static var blockInputThisFrame:Bool = false;
 
 	public function new()
 	{
@@ -103,15 +104,11 @@ class FlxKeyboard extends FlxKeyManager<FlxKey, FlxKeyList>
 	 */
     public function handleAction(key:FlxKey, pressed:Bool):Void
     {
-        var currentTime:Float = Sys.time();
-    
-        if (currentTime == _lastInputTime)
+        if (blockInputThisFrame)
         {
             return;
         }
-    
-        _lastInputTime = currentTime;
-  
+
         var keyInput = getKey(key);
         if (keyInput != null)
         {
